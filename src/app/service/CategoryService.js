@@ -7,6 +7,7 @@ const {
   UNAUTHORIZED,
 } = require("http-status-codes");
 const { CategorySchema, ProductSchema } = require("../schema");
+const { CategoryStatus } = require("../constant");
 const CategoryService = {
   Create(user_id, name) {
     const new_cate = new CategorySchema({ user: user_id, name });
@@ -16,47 +17,47 @@ const CategoryService = {
     try {
       const cate = await CategorySchema.findById({ _id: cate_id });
       if (!cate) {
-        return { error: "Category not found", status: NOT_FOUND  };
+        return { mess: "Category not found", status: NOT_FOUND  };
       }
       if (user_id != cate.user._id) {                
-        return {error:"This function is only performed by the author", status: UNAUTHORIZED };
+        return {mess:"This function is only performed by the author", status: UNAUTHORIZED };
       }
       cate.name=category_name; 
       cate.save()
-      return { success: "The category has been updated successfully", status: OK};
+      return { mess: "The category has been updated successfully", status: OK};
     } catch (error) {
-      return { error: error, mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+      return {  mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },  
   async Delete(user_id, cate_id) {
     try {
       const cate = await CategorySchema.findById({_id: cate_id});
       if (!cate) {
-        return { error: "Category not found", status: NOT_FOUND  };
+        return { mess: "Category not found", status: NOT_FOUND  };
       }
       const cate_used = ProductSchema.find({cate:cate_id});
       if (cate_used) {
-        return {error:"Category has been used",status: NOT_ACCEPTABLE};
+        return {mess:"Category has been used",status: NOT_ACCEPTABLE};
       }
       if (user_id != cate.user._id) {
-        return {error:"This function is only performed by the author",status: UNAUTHORIZED};
+        return {mess:"This function is only performed by the author",status: UNAUTHORIZED};
       }
       await CategorySchema.deleteOne(cate)  
-      return { success: "The category has been updated successfully",status: OK,};
+      return { mess: "The category has been updated successfully",status: OK,};
     } catch (error) {
-      return { error: error, mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
   async View(user_id) {
     try {
-      const listcate = await CategorySchema.find({user:user_id});
+      const listcate = await CategorySchema.find({user:user_id,status:{$ne:CategoryStatus.DELETED}});
       if (!listcate) {
-        return { error: "Category not found", status: NOT_FOUND  };
+        return { mess: "Category not found", status: NOT_FOUND  };
       }else {
         return listcate
       } 
     } catch (error) {
-      return { error: error, mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
 };

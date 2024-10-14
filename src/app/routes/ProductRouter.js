@@ -1,21 +1,12 @@
-/* 
-Express ()
-Auth
-Role
-Controller 
- */
-
 const {Auth, FileHandler}=require('../middleware')
 const express=require('express')
-const route=express.Router()
+const router=express.Router()
 const {ProductController} = require('../controller')
-const { AUCTION_OWNER } = require('../constant/Role')
+const { STORE_OWNER: AUCTION_OWNER, CUSTOMER } = require('../constant/Role')
 
-route.get('/list',ProductController.List)
-route.get('/detail/:id',ProductController.Detail)
+router.get('/list',ProductController.List)
+router.get('/detail/:id',ProductController.Detail)
+router.get('/search/:name', ProductController.Search)
 
-route.post('/create',Auth([AUCTION_OWNER]),FileHandler().single('file'),ProductController.Create)
-route.put('/update/:id',Auth([AUCTION_OWNER]),FileHandler().single('file'),ProductController.Update)
-route.delete('/delete/:id',Auth([AUCTION_OWNER]),ProductController.Delete)
-module.exports=route
+module.exports=router
 

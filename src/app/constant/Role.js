@@ -2,7 +2,7 @@ const Role = {
   GUEST: "guest",
   ADMIN: "admin",
   CUSTOMER: "customer",
-  AUCTION_OWNER: "auction_owner",
+  STORE_OWNER: "store_owner",
 };
 
 module.exports = Role;

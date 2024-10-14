@@ -5,18 +5,23 @@ const { UserStatus } = require("../constant");
 const { NOT_FOUND, OK, BAD_REQUEST, CONFLICT } = require("http-status-codes");
 
 const AdminController = {
-  async GetListUser(req,res) {
-    // console.log(apq(req.query));
-
-    const { filter, Page, limit,skip, email, phone, status } = apq(req.query);
-    // console.log({ filter, Page, limit, email, phone, status });
-
-    const result = await AdminService.GetListUser(filter, Page, limit,skip);
-
-    return json("result");
+  async GetListUser(req, res) {
+    const result = await AdminService.GetListUser(req);
+    return res.json(result);
+  },
+  async GetListProduct(req, res) {
+    const result = await AdminService.GetListProduct(req);
+    return res.json(result);
+  },
+  async Censor(req, res) {
+    const user_id = req.params.id;
+    const { auctionProductId,  status} = req.body;
+    const result = await AdminService.Censor(user_id,auctionProductId,status);
+    console.log(result);
+    return res.json(result);
   },
 
-  async Banned(req,res) {
+  async Banned(req, res) {
     const user_id = req.params.id;
     const result = await AdminService.Banned(user_id);
     console.log(result);

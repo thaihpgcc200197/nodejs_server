@@ -1,79 +1,91 @@
-/* 
-Schema
-Status
-*/
-
-const { NOT_FOUND, INTERNAL_SERVER_ERROR, OK, CREATED, NOT_ACCEPTABLE } = require("http-status-codes");
+const { NOT_FOUND, INTERNAL_SERVER_ERROR, OK, CREATED, NOT_ACCEPTABLE, BAD_REQUEST} = require("http-status-codes");
 const { ProductSchema, CategorySchema } = require("../schema");
 const { BytescaleUtil } = require("../../util");
 const mongoose = require("mongoose");
 const {ProductStatus} = require("../constant");
+const aqp = require("api-query-params");
 
 const ProductService = {
-    async Create(name, category_id, start_price, step_price, user_id, file) {
-    if (!category_id.match(/^[0-9a-fA-F]{24}$/)) {
-      return { error: "Invalid Category id", status: NOT_FOUND };
-    }
-    const cate = await CategorySchema.findById({ _id: category_id });
+  async makeBid(auctionProductId, price,user_id) {
     try {
-      const { file_url, file_path } = await BytescaleUtil.Upload(file,"/upload");
-      if (!cate) {
-        return { error: "Category not found", status: NOT_FOUND };
+      const product = await ProductSchema.findOne({ _id: auctionProductId, status: ProductStatus.AUCTIONING});
+      const {mess,status} = await this.validateProductAndPrice(product,price);
+      if(mess!=""){
+        return {mess,status}
       }
-      const product = new ProductSchema({ name, cate: category_id, start_price, step_price,
-         user: user_id, img_url: file_url, img_path: file_path,status:'processing'});
-      return product.save();
+      product.bids.push({ user: new mongoose.Types.ObjectId(user_id), price: price });
+      await product.save();
+      return { mess: "Bid placed successfully", status: OK }; 
     } catch (error) {
-      return {error:error, status:INTERNAL_SERVER_ERROR}
+      console.error(error);
+      return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR }; 
     }
   },
-  async Update(name,category_id,product_id,start_price,step_price,user_id,file  ) {
-    if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
-    if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
-    const product = await ProductSchema.findById({ _id: product_id });
-    if(!product) return { error: "Product not found", status: NOT_FOUND };
-    if(product.user.toString()!=user_id){
-      return { error: "You are not the author", status: UNAUTHORIZED };
+
+  validateProductAndPrice(product,price){
+    if (!product) {
+      return { mess: "Product not found in ongoing auction", status: NOT_FOUND };  
     }
-      try {
-        if(file){
-        BytescaleUtil.Delete(product.img_path)
-        const {file_url , file_path} = await BytescaleUtil.Upload(file,"/upload")
-        product.img_url = file_url
-        product.img_path = file_path
-        }
-        product.name = name
-        product.cate = new mongoose.Types.ObjectId(category_id)
-        product.start_price=start_price;
-        product.step_price=step_price;
-        return product.save()
-        } catch (error) {
-          return {error:error, status:INTERNAL_SERVER_ERROR}
-        }
-  },
-  async Delete(product_id, user_id) {
+    if (product.end_time < new Date()) {
+      return { mess: "The auction has ended.", status: BAD_REQUEST };  
+    }
+    if (price==null || price=="") {
+      return { mess: "Price is required", status: BAD_REQUEST };  
+    } 
+
+    const highestBidPrice = product.bids.reduce((highestPrice, currentBid) => {
+      if (currentBid.price > highestPrice) {
+        return currentBid.price;
+      }
+      return highestPrice;
+    }, product.start_price)
+    const validPrice = highestBidPrice + product.step_price;
+    if (price <= validPrice) {
+      return { mess: "Price must be greater than base price plus step price", status: BAD_REQUEST };
+    }
+    return {mess:"", status:OK}
+   },
+
+
+  async searchProductsByName(name) {    
     try {
-      const product = await ProductSchema.findById({ _id: product_id });
-      if (!product || product.status == ProductStatus.DELETED) {
-        return { error: "Product not found", status: NOT_FOUND};
-      }
-      if (user_id != product.user.toString()) {
-        return { error: "You are not the author", status: UNAUTHORIZED };
-      }
-      if (product.status == ProductStatus.UP_FOR_AUCTION) {
-        return { error: "It is not possible to delete a product while it is in auction.", status: NOT_ACCEPTABLE };
-      }
-      if (product.status == ProductStatus.HAS_BEEN_AUCTIONED) {
-          product.status=ProductStatus.DELETED;
-          product.save()
-        return { success: "Delete product successfully", status: OK };
-      }      
-      BytescaleUtil.Delete(product.img_path);
-      await ProductSchema.deleteOne({ _id: new mongoose.Types.ObjectId(product_id)});
-      return { success: "Delete product successfully", status: OK };
+      const products = await ProductSchema.find({
+        name: { $regex: name, $options: 'i' }
+      });
+      return { mess: "Products search successfully", status: OK, products };
     } catch (error) {
-      return {error:error, status:INTERNAL_SERVER_ERROR}
+      console.error(error);
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
+  
+  async listProduct(req) {
+    try {
+      const { filter, limit, sort} = aqp(req.query,{blacklist:['page','status']});
+      filter.status=ProductStatus.AUCTIONING;
+      const {page} = req.query;
+      const product = await ProductSchema.find(filter)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort(sort)
+      .exec();
+      const total = await ProductSchema.countDocuments(filter);  
+      return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product };
+    } catch (error) {
+      console.error(error);
+      return {mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+    }
+  },
+
+  async Detail(_id) {
+    try {
+      const product = await ProductSchema.findOne({ _id: new mongoose.Types.ObjectId(_id)}).populate('cate');
+      if (!product) return { mess: 'Product not found' , statusCode: NOT_FOUND, };
+      return { product ,statusCode: OK};
+    } catch (error) {
+      console.error(error); 
+      return { mess: 'Internal server error', statusCode: INTERNAL_SERVER_ERROR};
+    }
+  }, 
 };
 module.exports = ProductService;

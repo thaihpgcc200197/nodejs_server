@@ -51,7 +51,5 @@ app.use("/api", router);
 
 const PORT = "3000";
 app.listen(PORT, () =>
-  console.log(
-    `Server started`.yellow + `\nListening request on ${PORT} `.green
-  )
+  console.log(`Server started`.yellow + `\nListening request on ${PORT} `.green)
 );

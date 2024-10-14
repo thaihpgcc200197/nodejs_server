@@ -8,11 +8,15 @@ const ProductSchema = new Schema(
     name: { type: String, require: true },
     img_url: { type: String, require: true },
     img_path: { type: String, require: true },
-    start_time: { type: String, require: true },
-    end_time: { type: String, require: true },
+    start_time: { type: Date, require: true },
+    end_time: { type: Date, require: true },
     step_price: { type: Number, require: true },
     start_price: { type: Number, require: true },
-    quantity: { type: String, require: true },
+    quantity: { type: Number, require: true },
+    bids: [{
+      user: { type: Schema.ObjectId, ref: "User" },
+      price: { type: Number },
+    }],
     status: { type: String, require: true },
   },
   { timestamps: true }

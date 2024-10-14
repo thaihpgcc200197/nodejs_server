@@ -9,21 +9,19 @@ const Auth = (roles) => {
     }
     const token = bearer_token.split(" ");
     if (token[0] != "Bearer") {
-      // console.log(token[0]);
       console.log(2);
       return res.json({ code: UNAUTHORIZED, errors: "UNAUTHORIZED" });
     }
 
-    const user = JWT.Verify(token[1]);
+    const user = JWT.Verify(token[1]);    
     if (!user || !roles.includes(user.role)) {
-      // console.log(user);
-
+      console.log(!user);
+      console.log(roles , user.role);
+      
       console.log(3);
       return res.json({ code: UNAUTHORIZED, errors: "UNAUTHORIZED" });
-    }
-
+    } 
     req.user = user;
-    
     next();
   };
 };
