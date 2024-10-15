@@ -15,7 +15,7 @@ const UserSchema = new Schema(
     birthday: { type: String },
     address: { type: String },
     role: { type: String, require: true },
-    status: { type: String, default: UserStatus.VERIFYING },
+    status: { type: String, default: UserStatus.ACTIVATED },
   },
   { timestamps: true }
 );
