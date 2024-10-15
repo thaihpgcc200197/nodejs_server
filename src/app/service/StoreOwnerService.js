@@ -11,7 +11,7 @@ const StoreOwnerService = {
     try {
         const user_id = req.user.id;
         const now = new Date();
-        let filter = {
+        let filterAuctioned = {
           end_time: {
               $lt: now, 
               $gte: new Date(now.getFullYear(), now.getMonth(), 1),

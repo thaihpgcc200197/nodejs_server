@@ -68,6 +68,7 @@ const ProductService = {
       .skip((page - 1) * limit)
       .limit(limit)
       .sort(sort)
+      .populate('cate')
       .exec();
       const total = await ProductSchema.countDocuments(filter);  
       return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product };
