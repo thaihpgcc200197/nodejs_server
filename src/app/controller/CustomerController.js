@@ -1,7 +1,8 @@
 const { CustomerService } = require("../service");
 const CustomerController = {
   async MakeBid(req, res) {
-    const { auctionProductId, price, user_id } = req.body;
+    const { auctionProductId, price } = req.body;
+    const user_id = req.user.id;
     const result = await CustomerService.MakeBid(
       auctionProductId,
       price,
