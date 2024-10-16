@@ -20,12 +20,5 @@ const AdminController = {
     console.log(result);
     return res.json(result);
   },
-
-  async Banned(req, res) {
-    const user_id = req.params.id;
-    const result = await AdminService.Banned(user_id);
-    console.log(result);
-    return res.json(result);
-  },
 };
 module.exports = AdminController;

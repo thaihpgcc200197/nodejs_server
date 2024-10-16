@@ -16,6 +16,7 @@ const ProductSchema = new Schema(
     bids: [{
       user: { type: Schema.ObjectId, ref: "User" },
       price: { type: Number },
+      createdAt: { type: Date, default: Date.now },
     }],
     status: { type: String, require: true },
   },

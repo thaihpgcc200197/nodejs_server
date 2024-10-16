@@ -181,50 +181,6 @@ const StoreOwnerService = {
     return {mess:"",status:OK}
   },
 
-
-  async searchProductsByName(name) {
-    try {
-      const products = await ProductSchema.find({
-        name: { $regex: name, $options: 'i' }
-      });
-
-      return { mess: "Products found successfully", status: OK, products };
-    } catch (error) {
-      console.error(error);
-      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
-    }
-  },
-  
-  async listProduct(req) {
-    try {
-      const { filter, limit, sort} = aqp(req.query,{blacklist:['page']});
-      const {page} = req.query
-      const product = await ProductSchema.find(filter)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort(sort)
-      .populate('cate')
-      .exec();
-      const total = await ProductSchema.countDocuments(filter);  
-      return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product };
-    } catch (error) {
-      console.error(error);
-      return {mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
-    }
-  },
-
-
-  async Detail(_id) {
-    try {
-      const product = await ProductSchema.findOne({ _id: new mongoose.Types.ObjectId(_id)}).populate('cate');
-      if (!product) return { mess: 'Product not found' , statusCode: NOT_FOUND, };
-      return { product ,statusCode: OK};
-    } catch (error) {
-      console.error(error); 
-      return { mess: 'Internal server error', statusCode: INTERNAL_SERVER_ERROR};
-    }
-  },
-
   
     async Create(name, category_id, start_price, step_price, user_id, file) {
     if (!category_id.match(/^[0-9a-fA-F]{24}$/)) {
