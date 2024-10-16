@@ -65,10 +65,11 @@ const CustomerService = {
         if (!product) return { mess: "Product not found or bidding period has ended.", status: NOT_FOUND }; 
         const { mess, status } = await this.validateProductAndPrice(product, price);
         if (mess) return { mess, status };
-        const bid={ user: new mongoose.Types.ObjectId(user_id), price: price };
-        product.bids.push(bid);
+        product.bids.push({ user: new mongoose.Types.ObjectId(user_id), price: price });
         await product.save();
-        return { mess: "Bid placed successfully", status: OK,product,user,bid};
+        const bid = product.bids[product.bids.length - 1]
+        bid.user=user;
+        return { mess: "Bid placed successfully", status: OK,product,bid};
     } catch (error) {
         console.error(error);
         return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR };
