@@ -182,7 +182,7 @@ const StoreOwnerService = {
   },
 
   
-    async Create(name, category_id, start_price, step_price, user_id, file) {
+    async Create(name, category_id, start_price, step_price, user_id, file,quantity) {
     if (!category_id.match(/^[0-9a-fA-F]{24}$/)) {
       return { error: "Invalid Category id", status: NOT_FOUND };
     }
@@ -192,7 +192,7 @@ const StoreOwnerService = {
       if (!cate) {
         return { mess: "Category not found", status: NOT_FOUND };
       }
-      const product = new ProductSchema({ name, cate: category_id, start_price, step_price,
+      const product = new ProductSchema({ name, cate: category_id, start_price, step_price,quantity,
          user: user_id, img_url: file_url, img_path: file_path,status:'processing'});
       const result= await product.save();
       return {result, status:CREATED};
@@ -200,7 +200,7 @@ const StoreOwnerService = {
       return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}
     }
   },
-  async Update(name,category_id,product_id,start_price,step_price,user_id,file  ) {
+  async Update(name,category_id,product_id,start_price,step_price,user_id,file,quantity  ) {
     if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
     if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
    
@@ -221,6 +221,8 @@ const StoreOwnerService = {
         product.cate = new mongoose.Types.ObjectId(category_id)
         product.start_price=start_price;
         product.step_price=step_price;
+        product.quantity=quantity;
+
         return product.save()
         } catch (error) {
           return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}

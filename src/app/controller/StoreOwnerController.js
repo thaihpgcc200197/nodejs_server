@@ -40,18 +40,18 @@ const StoreOwnerController = {
     return res.json(result);
   },
   async Create(req, res) {
-    const { name, category_id, start_price, step_price } = req.body;
+    const { name, category_id, start_price, step_price,quantity } = req.body;
     const file=req.file
     const user_id = req.user.id;
-    const result = await StoreOwnerService.Create(name,category_id,start_price,step_price,user_id,file);
+    const result = await StoreOwnerService.Create(name,category_id,start_price,step_price,user_id,file,quantity);
     return res.json(result);  
   },
   async Update(req, res) {
-    const { name, category_id, start_price, step_price } = req.body;
+    const { name, category_id, start_price, step_price,quantity } = req.body;
     const file=req.file 
     const product_id=req.params.id;
     const user_id = req.user.id;
-    const result = await StoreOwnerService.Update(name,category_id,product_id,start_price,step_price,user_id,file);
+    const result = await StoreOwnerService.Update(name,category_id,product_id,start_price,step_price,user_id,file,quantity);
     return res.json(result);
   },
   async Delete(req, res) {
