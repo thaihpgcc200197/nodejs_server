@@ -4,7 +4,7 @@ const {
   OK,
   BAD_REQUEST,
 } = require("http-status-codes");
-const { ProductSchema, OrderSchema } = require("../schema");
+const { ProductSchema, OrderSchema, UserSchema } = require("../schema");
 const mongoose = require("mongoose");
 const { ProductStatus } = require("../constant");
 const aqp = require("api-query-params");
@@ -51,8 +51,10 @@ const CustomerService = {
     }
   },
   async MakeBid(auctionProductId, price, user_id) {
+  
     try {
         const now = new Date();  
+        const user = await UserSchema.findById({_id:user_id})
         const product = await ProductSchema.findOne({
             _id: auctionProductId,
             status: ProductStatus.AUCTIONING,
@@ -63,10 +65,10 @@ const CustomerService = {
         if (!product) return { mess: "Product not found or bidding period has ended.", status: NOT_FOUND }; 
         const { mess, status } = await this.validateProductAndPrice(product, price);
         if (mess) return { mess, status };
-
-        product.bids.push({ user: new mongoose.Types.ObjectId(user_id), price: price });
+        const bid={ user: new mongoose.Types.ObjectId(user_id), price: price };
+        product.bids.push(bid);
         await product.save();
-        return { mess: "Bid placed successfully", status: OK,product };
+        return { mess: "Bid placed successfully", status: OK,product,user,bid};
     } catch (error) {
         console.error(error);
         return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR };
