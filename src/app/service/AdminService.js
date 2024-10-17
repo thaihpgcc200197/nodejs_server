@@ -7,80 +7,53 @@ const {
   INTERNAL_SERVER_ERROR,
 } = require("http-status-codes");
 const aqp = require("api-query-params");
-const { UserStatus, Role, ProductStatus } = require("../constant");
+const { ProductStatus } = require("../constant");
 const { default: mongoose } = require("mongoose");
 const AdminService = {
   async GetListUser(req) {
     try {
-      const { filter, limit, sort} = aqp(req.query,{blacklist:['page']});
-      const {page} = req.query
-      const product = await UserSchema.find(filter)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort(sort)
-      .exec();
-      const total = await UserSchema.countDocuments(filter);  
-      return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product };
+      const { filter } = aqp(req.query);
+      const product = await UserSchema.find(filter).exec();
+      return { product, status: OK };
     } catch (error) {
       console.error(error);
-      return {mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
 
   async GetListProduct(req) {
     try {
-      const { filter, limit, sort} = aqp(req.query,{blacklist:['page']});
-      const {page} = req.query
+      const { filter } = aqp(req.query);
+
       const product = await ProductSchema.find(filter)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort(sort)
-      .populate('user','-password')
-      .exec();
-      const total = await ProductSchema.countDocuments(filter);  
-      return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product };
+        .populate("user", "-password")
+        .populate("bids.user")
+        .exec();
+      return { product, status: OK };
     } catch (error) {
       console.error(error);
-      return {mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
 
-  async Censor(user_id, auctionProductId, status) {
+  async Censor(auctionProductId, status) {
     try {
-      const user = await UserSchema.findOne({
-        _id: new mongoose.Types.ObjectId(user_id),
-      });
-      if (!user || user.role != Role.ADMIN) {
-        return { error: "Admin only functions", code: UNAUTHORIZED };
-      }
-      const product = await ProductSchema.findOne({
-        _id: new mongoose.Types.ObjectId(auctionProductId),
-      });
+      const product = await ProductSchema.findById(auctionProductId);
+      if (!product) return { mess: "Product not found", status: NOT_FOUND };
       if (status == ProductStatus.ACCEPT) {
         product.status = ProductStatus.ACCEPT;
         product.save();
-        return { success: "Product has been accepted successfully", code: OK };
-      } else {
+        return { mess: "Product has been accepted successfully", status: OK };
+      }
+      if (status==ProductStatus.REFUSE) {
         product.status = ProductStatus.REFUSE;
         product.save();
-        return { success: "Product has been refuse successfully", code: OK };
+        return { mess: "Product has been refuse successfully", status: OK };
+      } else {
+        return { mess: "Status product invalid", status:BAD_REQUEST };
       }
     } catch (error) {
-      return { error: error, code: BAD_REQUEST };
-    }
-  },
-
-  async Banned(user_id) {
-    try {
-      const user = await UserSchema.findOne({ _id: user_id });
-      if (!user || user.role != Role.ADMIN) {
-        return { error: "Admin only functions", code: UNAUTHORIZED };
-      }
-      user.status = UserStatus.BANNED;
-      user.save();
-      return { success: "Account banned successfully", code: OK };
-    } catch (error) {
-      return { error: error, code: BAD_REQUEST };
+      return { mess: error, status: BAD_REQUEST };
     }
   },
 };

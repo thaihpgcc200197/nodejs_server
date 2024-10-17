@@ -11,7 +11,7 @@ router.post('/product/create', FileHandler().single("upload"),StoreOwnerControll
 router.put('/product/update/:id', FileHandler().single("upload"),StoreOwnerController.Update)
 router.delete('/product/delete/:id',StoreOwnerController.Delete)
 
-router.delete('/manage_order',StoreOwnerController.ManageOrder)
+router.post('/manage_order',StoreOwnerController.ManageOrder)
 router.get('/list-order',StoreOwnerController.ListOrder)
 
 router.get('/my-bid-statistics',StoreOwnerController.MyBidStatistics)

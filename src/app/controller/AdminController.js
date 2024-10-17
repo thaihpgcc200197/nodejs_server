@@ -13,10 +13,9 @@ const AdminController = {
     const result = await AdminService.GetListProduct(req);
     return res.json(result);
   },
-  async Censor(req, res) {
-    const user_id = req.params.id;
-    const { auctionProductId,  status} = req.body;
-    const result = await AdminService.Censor(user_id,auctionProductId,status);
+  async Censor(req, res) {    
+    const { auctionProductId, status} = req.body;
+    const result = await AdminService.Censor(auctionProductId,status);
     console.log(result);
     return res.json(result);
   },
