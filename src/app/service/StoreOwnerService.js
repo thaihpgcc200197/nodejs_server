@@ -62,14 +62,14 @@ const StoreOwnerService = {
       filter.user=req.user.id
       filter.status = { $ne: ProductStatus.DELETED };
       const products = await ProductSchema.find(filter).exec();   
-      const active_bid= 0;
-      const revenue= 0;
-      const winner= 0;
-      const current_date=new Date();
+      let active_bid= 0;
+      let revenue= 0;
+      let winner= 0;
+      let current_date=new Date();
       products.map(pro=>{
-        if (pro.start_time >= current_date && pro.end_time<=current_date) {
+        if (pro.start_time <= current_date && pro.end_time>=current_date) {
           active_bid+=1;
-          revenue+=pro.bids[pro.bids.length-1]
+          revenue+=pro.bids[pro.bids.length-1].price
           if(pro.end_time<current_date && pro.bids.length>0) winner+=1
         }
       })
