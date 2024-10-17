@@ -7,76 +7,16 @@ const aqp = require("api-query-params");
 const OrderStatus = require("../constant/OrderStatus");
 
 const StoreOwnerService = {
-  async OverallStatistics(req) { 
-    try {
-        const user_id = req.user.id;
-        const now = new Date();
-        let filterAuctioned = {
-          end_time: {
-              $lt: now, 
-              $gte: new Date(now.getFullYear(), now.getMonth(), 1),
-              $lt: new Date(now.getFullYear(), now.getMonth() + 1, 1)
-          },
-          user: new mongoose.Types.ObjectId(user_id)  
-      };
-
-        let filterAuctioning = { 
-            status: ProductStatus.AUCTIONING,
-            start_time: { $lte: now },
-            end_time: { $gte: now },
-            user: new mongoose.Types.ObjectId(user_id)  
-        };
-        
-        const productsAuctioned = await ProductSchema.find(filterAuctioned).exec();
-        const quantityProductAuctioning = await ProductSchema.countDocuments(filterAuctioning).exec();
-
-        let totalHighestBidsPrice = 0;
-        productsAuctioned.forEach(product => {
-            if (product.bids && product.bids.length > 0) {
-                const maxBidPrice = Math.max(...product.bids.map(bid => bid.price));
-                totalHighestBidsPrice += maxBidPrice;
-            }
-        });
-        return {
-            quantityproduct: productsAuctioned.length, 
-            totalHighestBidsPrice, 
-            quantity_product_auctioning: quantityProductAuctioning, 
-            status: OK
-        };
-    } catch (error) {
-        console.error(error);
-        return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
-    }
-  },
 
   async WinningBidStatistics(req) {
     try {
-      const { filter, limit } = aqp(req.query, { blacklist: ['from_date', 'to_date','status','name'] });
-      const { page, from_date, to_date,status,name } = req.query;
+      const { filter } = aqp(req.query);
       
-      if (from_date || to_date) {
-        filter.$and = [];
-        if (from_date) filter.$and.push({ start_time: { $gte: new Date(from_date) } });
-        if (to_date) filter.$and.push({ end_time: { $lte: new Date(to_date) } });
-      }
       filter.user = req.user.id;
-      if (name) filter.name = { $regex: name, $options: 'i' }; 
-      let orderFilter = {};
-      console.log(status);
       
-      if (status)  orderFilter.status = status;
-      const orders = await OrderSchema.find(orderFilter).select('product').exec();    
-      const orderedProductIds = orders.map(order => order.product);
-      filter._id = { $in: orderedProductIds };
-  
-      const products = await ProductSchema.find(filter).skip((page - 1) * limit).limit(limit).exec();
-      const total = await ProductSchema.countDocuments(filter);
-  
+      const orders = await OrderSchema.find(filter).populate('product').exec();    
       return {
-        quantityOfAuctionProduct: products.length,
-        page: Number.parseInt(page),
-        lastpage: Math.ceil(total / limit),
-        products
+        orders, status:OK
       };
     } catch (error) {
       console.error(error);
@@ -86,36 +26,14 @@ const StoreOwnerService = {
 
   async MyActivityStatistics(req) {
     try {
-      const { filter, limit } = aqp(req.query, { blacklist: ['from_date', 'to_date', 'name'] });
-      const { page, from_date, to_date, name } = req.query;
-  
-      if (from_date || to_date) {
-        filter.$and = [];
-        if (from_date) filter.$and.push({ start_time: { $gte: new Date(from_date) } });
-        if (to_date) filter.$and.push({ end_time: { $lte: new Date(to_date) } });
-      }
-  
-      if (name) filter.name = { $regex: name, $options: 'i' };
-  
+      const { filter } = aqp(req.query);
+   
       filter.bids = { $elemMatch: { user: req.user.id } };
    
-  
-      const orders = await OrderSchema.find({user : req.user.id}).select('product').exec();    
-      const orderedProductIds = orders.map(order => order.product);
-
-      const productAuctioned = await ProductSchema.find({ _id: { $in: orderedProductIds } }).exec();
-  
-      filter._id = { $nin: orderedProductIds };
-  
-      const filteredProducts = await ProductSchema.find(filter).skip((page - 1) * limit).limit(limit).exec();
-      const total = await ProductSchema.countDocuments(filter);
+      const productAuctioned = await ProductSchema.find(filter).exec();
       
       return {
-        productAuctioned, 
-        filteredProducts,  
-        quantityOfAuctionProduct: filteredProducts.length,
-        page: Number.parseInt(page),
-        lastpage: Math.ceil(total / limit)
+        productAuctioned
       };
     } catch (error) {
       console.error(error);
@@ -123,30 +41,30 @@ const StoreOwnerService = {
     }
   },
   
-
-
-
    async MyBidStatistics(req) {
     try {
-      const { filter, limit } = aqp(req.query,{blacklist:['from_date', 'to_date','name']});
-      const { page, from_date, to_date,name } = req.query;
-      if (from_date || to_date) {
-        filter.$and = [];
-        if (from_date) filter.$and.push({ start_time: { $gte: new Date(from_date) } });
-        if (to_date) filter.$and.push({ end_time: { $lte: new Date(to_date) } });
-      }
+      const { filter} = aqp(req.query);
       filter.user=req.user.id
-      if (name) filter.name = { $regex: name, $options: 'i' }; 
-      const product = await ProductSchema.find(filter).skip((page - 1) * limit).limit(limit).exec();
-      const total = await ProductSchema.countDocuments(filter);
-      
-      return {quantityOfAuctionProduct:product.length,
-        page: Number.parseInt(page), lastpage: Math.ceil(total / limit),product };
+      const products = await ProductSchema.find(filter).exec();   
+      const active_bid= 0;
+      const revenue= 0;
+      const count= 0;
+      const current_date=new Date();
+      products.map(pro=>{
+        if (pro.start_time >= current_date && pro.end_time<=current_date) {
+          active_bid+=1;
+          revenue+=pro.bids[pro.bids.length-1]
+          if(pro.end_time<current_date && pro.bids.length>0) count+=1
+        }
+      })
+      return {quantityOfAuctionProduct:product.length,product };
     } catch (error) {
       console.error(error); 
       return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
+
+
 
   async ManageOrder(product_id,status) {
     try {
