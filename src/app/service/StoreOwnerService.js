@@ -146,12 +146,16 @@ const StoreOwnerService = {
     if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
     if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
    
-    const product = await ProductSchema.findById({ _id: product_id });
+    const product = await ProductSchema.findById(product_id);
+    console.log(product);
+    console.log(product.cate);
+    console.log(product.status);
+    
     if(!product) return { mess: "Product not found", status: NOT_FOUND };
-    if(product.status!=ProductStatus.PROCESSING) return { mess: "Product not found", status: NOT_FOUND };
-    if(product.user.toString()!=user_id){
+    if(product.user.toString() !=user_id){
       return { mess: "You are not the author", status: UNAUTHORIZED };
     }
+    if(product.status==ProductStatus.PROCESSING) {
       try {
         if(file){
         BytescaleUtil.Delete(product.img_path)
@@ -169,6 +173,10 @@ const StoreOwnerService = {
         } catch (error) {
           return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}
         }
+    }else{
+      return { mess: "Product not found or not status processing", status: NOT_FOUND };
+    } 
+  
   },
   async Delete(product_id, user_id) {
     try {

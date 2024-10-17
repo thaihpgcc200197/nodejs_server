@@ -9,7 +9,7 @@ router.use("/category",CategoryRouter);
 router.post('/product/publish', StoreOwnerController.Publish)
 router.post('/product/create', FileHandler().single("upload"),StoreOwnerController.Create)
 router.put('/product/update/:id', FileHandler().single("upload"),StoreOwnerController.Update)
-router.delete('/product/delete/:id', FileHandler().single("upload"),StoreOwnerController.Delete)
+router.delete('/product/delete/:id',StoreOwnerController.Delete)
 
 router.delete('/manage_order',StoreOwnerController.ManageOrder)
 router.get('/list-order',StoreOwnerController.ListOrder)
