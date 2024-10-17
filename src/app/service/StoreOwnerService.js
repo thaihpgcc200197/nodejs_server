@@ -8,13 +8,29 @@ const OrderStatus = require("../constant/OrderStatus");
 
 const StoreOwnerService = {
 
+  async WinningBidOrder(req) {
+    try {
+      const { filter } = aqp(req.query);
+      
+      filter.owner_id = req.user.id;
+      
+      const orders = await OrderSchema.find(filter).populate('product').populate('user').exec();    
+      return {
+        orders, status:OK
+      };
+    } catch (error) {
+      console.error(error);
+      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
+    }
+  },
+
   async WinningBidStatistics(req) {
     try {
       const { filter } = aqp(req.query);
       
-      filter.user = req.user.id;
+      filter.user_id = req.user.id;
       
-      const orders = await OrderSchema.find(filter).populate('product').exec();    
+      const orders = await OrderSchema.find(filter).populate('product').populate('user').exec();    
       return {
         orders, status:OK
       };
@@ -27,9 +43,8 @@ const StoreOwnerService = {
   async MyActivityStatistics(req) {
     try {
       const { filter } = aqp(req.query);
-   
       filter.bids = { $elemMatch: { user: req.user.id } };
-   
+      filter.status =ProductStatus.AUCTIONING;
       const productAuctioned = await ProductSchema.find(filter).exec();
       
       return {
@@ -41,31 +56,40 @@ const StoreOwnerService = {
     }
   },
   
-   async MyBidStatistics(req) {
+  async MyBidStatistics(req) {
     try {
       const { filter} = aqp(req.query);
       filter.user=req.user.id
+      filter.status = { $ne: ProductStatus.DELETED };
       const products = await ProductSchema.find(filter).exec();   
       const active_bid= 0;
       const revenue= 0;
-      const count= 0;
+      const winner= 0;
       const current_date=new Date();
       products.map(pro=>{
         if (pro.start_time >= current_date && pro.end_time<=current_date) {
           active_bid+=1;
           revenue+=pro.bids[pro.bids.length-1]
-          if(pro.end_time<current_date && pro.bids.length>0) count+=1
+          if(pro.end_time<current_date && pro.bids.length>0) winner+=1
         }
       })
-      return {quantityOfAuctionProduct:product.length,product };
+      return {products,winner, revenue, active_bid };
     } catch (error) {
       console.error(error); 
       return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
 
-
-
+  async ListOrder(user_id) {
+    try {
+      const orders = await OrderSchema.find({ owner_id: user_id });
+      if (!orders) return { mess: "Order not found", status: NOT_FOUND }; 
+      return { mess: "List order", status: OK,orders }; 
+    } catch (error) {
+      console.error(error);
+      return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR }; 
+    }
+  },
   async ManageOrder(product_id,status) {
     try {
       const order = await ProductSchema.findOne({ product: product_id, status: OrderStatus.PENDING });

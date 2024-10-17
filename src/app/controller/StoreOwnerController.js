@@ -6,6 +6,10 @@ const StoreOwnerController = {
     const result = await StoreOwnerService.WinningBidStatistics(req); 
     return res.json(result);
   },
+  async WinningBidOrder(req, res) {
+    const result = await StoreOwnerService.WinningBidOrder(req); 
+    return res.json(result);
+  },
   async MyBidStatistics(req, res) {
     const result = await StoreOwnerService.MyBidStatistics(req); 
     return res.json(result);
@@ -14,14 +18,16 @@ const StoreOwnerController = {
     const result = await StoreOwnerService.MyActivityStatistics(req); 
     return res.json(result);
   },
-  async OverallStatistics(req, res) {
-    const result = await StoreOwnerService.OverallStatistics(req); 
-    return res.json(result);
-  },
+
   async ManageOrder(req, res) {
     const {  product_id } = req.params;
     const { status } = req.body; 
     const result = await StoreOwnerService.ManageOrder(product_id,status); 
+    return res.json(result);
+  },
+  async ListOrder(req, res) {
+    const user_id = req.user.id;
+    const result = await StoreOwnerService.ListOrder(user_id); 
     return res.json(result);
   },
   async Publish(req, res) {

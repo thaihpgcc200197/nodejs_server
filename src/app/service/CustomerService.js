@@ -37,6 +37,7 @@ const CustomerService = {
     try {
       const { filter, limit, sort} = aqp(req.query);
       const {page} = req.query
+      filter.status=ProductStatus.AUCTIONING;
       filter.bids = { $elemMatch: { user: req.user.id } };
       const product = await ProductSchema.find(filter)
       .skip((page - 1) * limit)
@@ -105,7 +106,7 @@ const CustomerService = {
     return { mess: "", status: OK };
   },
 
-  async CheckoutCard(auctionProductId, user_id) {
+  async CheckoutCard(auctionProductId, user_id,owner_id) {
     try {
       const product = await ProductSchema.findOne({
         _id: new mongoose.Types.ObjectId(auctionProductId),
@@ -129,12 +130,12 @@ const CustomerService = {
       const order = new OrderSchema();
       order.product = new mongoose.Types.ObjectId(auctionProductId);
       order.user = new mongoose.Types.ObjectId(user_id);
+      order.owner_id = new mongoose.Types.ObjectId(owner_id);
       order.status=OrderStatus.PENDING;
       order.save();
       return { mess: "CheckoutCard successfully", status: OK, highestBidPrice };
     } catch (error) {
       console.log(error);
-      
       return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR };
     }
   },

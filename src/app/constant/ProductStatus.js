@@ -4,7 +4,6 @@ const ProductStatus={
     REFUSE:'refuse',
 
     AUCTIONING:'auctioning',
-    AUCTIONED:'auctioned',
 
     DELETED:'deleted',
 }
