@@ -146,8 +146,9 @@ const StoreOwnerService = {
     if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
     if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
    
-    const product = await ProductSchema.findById(product_id).populate('cate').exec();
-    
+    let product = await ProductSchema.findById(product_id).populate('cate').exec();
+    const cate= await CategorySchema.findById(category_id);
+    if(!cate) return { error: "Invalid category id", status: NOT_FOUND }; 
     if(!product) return { mess: "Product not found", status: NOT_FOUND };
     if(product.user.toString() !=user_id){
       return { mess: "You are not the author", status: UNAUTHORIZED };
@@ -165,8 +166,9 @@ const StoreOwnerService = {
         product.start_price=start_price;
         product.step_price=step_price;
         product.quantity=quantity;
-
-        return product.save()
+        product=await product.save();
+        product.cate=cate;
+        return {product,status:OK}
         } catch (error) {
           return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}
         }
