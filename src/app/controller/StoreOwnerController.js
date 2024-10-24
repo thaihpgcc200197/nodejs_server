@@ -19,17 +19,13 @@ const StoreOwnerController = {
     return res.json(result);
   },
 
-  async ManageOrder(req, res) {
+  async UpdateOrderStatus(req, res) {
     const {  product_id } = req.params;
     const { status } = req.body; 
-    const result = await StoreOwnerService.ManageOrder(product_id,status); 
+    const result = await StoreOwnerService.UpdateOrderStatus(product_id,status); 
     return res.json(result);
   },
-  async ListOrder(req, res) {
-    const user_id = req.user.id;
-    const result = await StoreOwnerService.ListOrder(user_id); 
-    return res.json(result);
-  },
+ 
   async Publish(req, res) {
     const { auctionProductId, start_time,end_time } = req.body; 
     const result = await StoreOwnerService.Publish(auctionProductId,start_time,end_time); 

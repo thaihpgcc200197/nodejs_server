@@ -80,17 +80,8 @@ const StoreOwnerService = {
     }
   },
 
-  async ListOrder(user_id) {
-    try {
-      const orders = await OrderSchema.find({ owner_id: user_id }).populate('product').populate('user_id').populate('owner_id').exec();
-      if (!orders) return { mess: "Order not found", status: NOT_FOUND }; 
-      return { mess: "List order", status: OK,orders }; 
-    } catch (error) {
-      console.error(error);
-      return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR }; 
-    }
-  },
-  async ManageOrder(product_id,status) {
+
+  async UpdateOrderStatus(product_id,status) {
     try {
       const order = await ProductSchema.findOne({ product: product_id, status: OrderStatus.PENDING });
       if (!order) return { mess: "Order not found or not status pending", status: BAD_REQUEST }; 
