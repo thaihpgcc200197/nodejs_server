@@ -1,5 +1,5 @@
 const {createClient} = require('@supabase/supabase-js')
-const {SUPABASE_BASE_URL, SUPABASE_NON_PUBLIC_KEY} = require('../env')
+const {SUPABASE_STORAGE_URL, SUPABASE_BASE_URL, SUPABASE_NON_PUBLIC_KEY} = require('../env')
 
 const supabase = createClient(SUPABASE_BASE_URL,SUPABASE_NON_PUBLIC_KEY)
 
@@ -21,7 +21,7 @@ const BytescaleUtil = {
     if(error){
       console.log('BytescaleUtit', error); 
     }
-    return { file_url: data?.fullPath, file_path: data?.path };
+    return { file_url: SUPABASE_STORAGE_URL+data?.fullPath, file_path: data?.path };
   },
   Delete(storage_path_arr) {
     supabase
