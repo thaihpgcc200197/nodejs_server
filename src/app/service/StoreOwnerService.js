@@ -146,7 +146,7 @@ const StoreOwnerService = {
     if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
     if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
    
-    const product = await ProductSchema.findById(product_id);
+    const product = await ProductSchema.findById(product_id).populate('cate').exec();
     
     if(!product) return { mess: "Product not found", status: NOT_FOUND };
     if(product.user.toString() !=user_id){
