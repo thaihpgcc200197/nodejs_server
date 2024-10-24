@@ -14,7 +14,7 @@ const StoreOwnerService = {
       
       filter.owner_id = req.user.id;
       
-      const orders = await OrderSchema.find(filter).sort(sort).populate('product').populate('user').exec();    
+      const orders = await OrderSchema.find(filter).populate('product').populate('user').sort(sort).exec();    
       return {
         orders, status:OK
       };
@@ -30,7 +30,7 @@ const StoreOwnerService = {
       
       filter.user_id = req.user.id;
       
-      const orders = await OrderSchema.find(filter).sort(sort).populate('product').populate('user').exec();    
+      const orders = await OrderSchema.find(filter).populate('product').populate('user').sort(sort).exec();    
       return {
         orders, status:OK
       };
@@ -61,7 +61,7 @@ const StoreOwnerService = {
       const { filter,sort} = aqp(req.query);
       filter.user=req.user.id
       filter.status = { $ne: ProductStatus.DELETED };
-      const products = await ProductSchema.find(filter).sort(sort).exec();   
+      const products = await ProductSchema.find(filter).populate('product').populate('user').sort(sort).exec();   
       let active_bid= 0;
       let revenue= 0;
       let winner= 0;
@@ -82,7 +82,7 @@ const StoreOwnerService = {
 
   async ListOrder(user_id) {
     try {
-      const orders = await OrderSchema.find({ owner_id: user_id });
+      const orders = await OrderSchema.find({ owner_id: user_id }).populate('product').populate('user').exec();
       if (!orders) return { mess: "Order not found", status: NOT_FOUND }; 
       return { mess: "List order", status: OK,orders }; 
     } catch (error) {
