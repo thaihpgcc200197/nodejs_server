@@ -8,6 +8,7 @@ const {
 } = require("http-status-codes");
 const { CategorySchema, ProductSchema } = require("../schema");
 const { CategoryStatus } = require("../constant");
+const aqp = require("api-query-params");
 const CategoryService = {
   Create(user_id, name) {
     const new_cate = new CategorySchema({ user: user_id, name });
@@ -54,12 +55,15 @@ const CategoryService = {
       return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
   },
-  async View(user_id) {
+  async View(req) {
     try {
-      const list_cate = await CategorySchema.find({
-        user: user_id,
-        status: { $ne: CategoryStatus.DELETED },
-      }).populate("user", "-password");
+      const user_id = req.user.id;    
+      const { filter,sort } = aqp(req.query);
+      filter.user=user_id;
+      filter.status={ $ne: CategoryStatus.DELETED }
+      const list_cate = await CategorySchema.find(filter).sort(sort)
+      .populate("user", "-password")
+      .exec();
       if (!list_cate) {
         return { mess: "Category not found", status: NOT_FOUND };
       } else {

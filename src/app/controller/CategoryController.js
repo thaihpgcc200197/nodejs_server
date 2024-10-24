@@ -19,8 +19,7 @@ const CategoryController = {
     return res.json(await CategoryService.Delete(user_id, cate_id))
   },
   async View(req, res) {  
-    const user_id = req.user.id;    
-    return res.json(await CategoryService.View(user_id))
+    return res.json(await CategoryService.View(req))
   },
 };
 module.exports = CategoryController;

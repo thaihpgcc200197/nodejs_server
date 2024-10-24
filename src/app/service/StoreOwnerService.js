@@ -10,11 +10,11 @@ const StoreOwnerService = {
 
   async WinningBidOrder(req) {
     try {
-      const { filter } = aqp(req.query);
+      const { filter,sort } = aqp(req.query);
       
       filter.owner_id = req.user.id;
       
-      const orders = await OrderSchema.find(filter).populate('product').populate('user').exec();    
+      const orders = await OrderSchema.find(filter).sort(sort).populate('product').populate('user').exec();    
       return {
         orders, status:OK
       };
@@ -26,11 +26,11 @@ const StoreOwnerService = {
 
   async WinningBidStatistics(req) {
     try {
-      const { filter } = aqp(req.query);
+      const { filter,sort } = aqp(req.query);
       
       filter.user_id = req.user.id;
       
-      const orders = await OrderSchema.find(filter).populate('product').populate('user').exec();    
+      const orders = await OrderSchema.find(filter).sort(sort).populate('product').populate('user').exec();    
       return {
         orders, status:OK
       };
@@ -42,10 +42,10 @@ const StoreOwnerService = {
 
   async MyActivityStatistics(req) {
     try {
-      const { filter } = aqp(req.query);
+      const { filter,sort } = aqp(req.query);
       filter.bids = { $elemMatch: { user: req.user.id } };
       filter.status =ProductStatus.AUCTIONING;
-      const productAuctioned = await ProductSchema.find(filter).exec();
+      const productAuctioned = await ProductSchema.find(filter).sort(sort).exec();
       
       return {
         productAuctioned
@@ -58,10 +58,10 @@ const StoreOwnerService = {
   
   async MyBidStatistics(req) {
     try {
-      const { filter} = aqp(req.query);
+      const { filter,sort} = aqp(req.query);
       filter.user=req.user.id
       filter.status = { $ne: ProductStatus.DELETED };
-      const products = await ProductSchema.find(filter).exec();   
+      const products = await ProductSchema.find(filter).sort(sort).exec();   
       let active_bid= 0;
       let revenue= 0;
       let winner= 0;
@@ -147,9 +147,6 @@ const StoreOwnerService = {
     if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
    
     const product = await ProductSchema.findById(product_id);
-    console.log(product);
-    console.log(product.cate);
-    console.log(product.status);
     
     if(!product) return { mess: "Product not found", status: NOT_FOUND };
     if(product.user.toString() !=user_id){

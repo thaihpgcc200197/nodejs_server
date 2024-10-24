@@ -12,8 +12,8 @@ const { default: mongoose } = require("mongoose");
 const AdminService = {
   async GetListUser(req) {
     try {
-      const { filter } = aqp(req.query);
-      const product = await UserSchema.find(filter).exec();
+      const { filter,sort } = aqp(req.query);
+      const product = await UserSchema.find(filter).sort(sort).exec();
       return { product, status: OK };
     } catch (error) {
       console.error(error);
@@ -23,9 +23,9 @@ const AdminService = {
 
   async GetListProduct(req) {
     try {
-      const { filter } = aqp(req.query);
+      const { filter,sort } = aqp(req.query);
 
-      const product = await ProductSchema.find(filter)
+      const product = await ProductSchema.find(filter).sort(sort)
         .populate("user", "-password")
         .populate("bids.user")
         .exec();

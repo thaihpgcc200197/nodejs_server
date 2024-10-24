@@ -20,14 +20,5 @@ const CustomerController = {
     );
     return res.json(result);
   },
-
-  async ViewAuctionActivity(req, res) {
-    const result = await CustomerService.ViewAuctionActivity(req);
-    return res.json(result);
-  },
-  async SearchAuctionActivity(req, res) {
-    const result = await CustomerService.SearchAuctionActivity(req);
-    return res.json(result);
-  },
 };
 module.exports = CustomerController;

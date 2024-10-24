@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@bytescale/sdk": "^3.45.0",
+    "@supabase/supabase-js": "^2.45.6",
     "api-query-params": "^5.4.0",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",

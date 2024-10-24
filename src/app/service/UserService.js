@@ -3,17 +3,21 @@ const { UserSchema } = require("../schema");
 const { NOT_FOUND } = require("http-status-codes");
 const UserService = {
   async UpdateAvatar(user_id, file) {
-    const user = UserSchema.findById(user_id);
+    const user =await UserSchema.findById(user_id);
     if (!user) {
       return { error: "user not found", code: NOT_FOUND };
     }
     const { file_url, file_path } = await BytescaleUtil.Upload(file, "/upload");
+    console.log(user);
+    
     if (user.avatar.path != "default") {
-      BytesaleUtcil.Delete(user.avatar.path);
+      BytescaleUtil.Delete(user.avatar.path);
     }
     user.avatar.path = file_path;
     user.avatar.url = file_url;
-    return user.save();
+    console.log(user);
+    
+    return  user.save();
   },
 
   async UpdateUser(full_name, phone, birthday, address, req) {

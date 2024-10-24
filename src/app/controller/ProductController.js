@@ -4,8 +4,7 @@ const aqp = require("api-query-params");
 const ProductController = {
 
   async Search(req, res) {  
-    const { name } = req.params;
-    const result = await ProductService.searchProductsByName(name);
+    const result = await ProductService.searchProductsByName(req);
     return res.json(result);
   },
   

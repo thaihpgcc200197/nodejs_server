@@ -11,48 +11,7 @@ const aqp = require("api-query-params");
 const OrderStatus = require("../constant/OrderStatus");
 
 const CustomerService = {
-
-  async SearchAuctionActivity(req) {
-    try {
-      const { filter, limit } = aqp(req.query,{blacklist:['from_date', 'to_date','status']});
-      const { page, from_date, to_date } = req.query;
-      filter.status=ProductStatus.AUCTIONING;
-      if (from_date || to_date) {
-        filter.$and = [];
-        if (from_date) filter.$and.push({ start_time: { $gte: new Date(from_date) } });
-        if (to_date) filter.$and.push({ end_time: { $lte: new Date(to_date) } });
-      }
-  
-      const product = await ProductSchema.find(filter).skip((page - 1) * limit).limit(limit).exec();
-      const total = await ProductSchema.countDocuments(filter);
-  
-      return { total, page: Number.parseInt(page), lastpage: Math.ceil(total / limit), product, status: OK };
-    } catch (error) {
-      console.error(error);
-      return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
-    }
-  },
-  
-  async ViewAuctionActivity(req) {
-    try {
-      const { filter, limit, sort} = aqp(req.query);
-      const {page} = req.query
-      filter.status=ProductStatus.AUCTIONING;
-      filter.bids = { $elemMatch: { user: req.user.id } };
-      const product = await ProductSchema.find(filter)
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .sort(sort)
-      .exec();
-      const total = await ProductSchema.countDocuments(filter);  
-      return {total,page:Number.parseInt(page),lastpage:Math.ceil(total / limit),product,status:OK};
-    } catch (error) {
-      console.error(error);
-      return {mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
-    }
-  },
   async MakeBid(auctionProductId, price, user_id) {
-  
     try {
         const now = new Date();  
         const user = await UserSchema.findById({_id:user_id})
@@ -132,7 +91,7 @@ const CustomerService = {
       order.user = new mongoose.Types.ObjectId(user_id);
       order.owner_id = new mongoose.Types.ObjectId(owner_id);
       order.status=OrderStatus.PENDING;
-      order.save();
+      await order.save();
       return { mess: "CheckoutCard successfully", status: OK, highestBidPrice };
     } catch (error) {
       console.log(error);

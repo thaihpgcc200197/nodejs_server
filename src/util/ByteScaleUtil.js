@@ -1,56 +1,38 @@
-const Bytescale = require("@bytescale/sdk");
-const nodeFetch = require("node-fetch");
-const {
-  BYTE_SCALE_PUBLIC_KEY,
-  BYTE_SCALE_SECRET_KEY,
-  BYTE_SCALE_ACCOUNT_ID,
-} = require("../env");
+const {createClient} = require('@supabase/supabase-js')
+const {SUPABASE_BASE_URL, SUPABASE_NON_PUBLIC_KEY} = require('../env')
+
+const supabase = createClient(SUPABASE_BASE_URL,SUPABASE_NON_PUBLIC_KEY)
+
 const BytescaleUtil = {
   async Upload(file, storage_path) {
-    const upload_manager = new Bytescale.UploadManager({
-      fetchApi: nodeFetch,
-      apiKey: BYTE_SCALE_PUBLIC_KEY,
-    });
-
-    const { fileUrl, filePath } = await upload_manager.upload({
-      data: file.buffer,
-      mime: file.mimetype,
-      originalFileName: file.originalname,
-      path: {
-        folderPath: storage_path,
-      },
-    });
-
-    return { file_url: fileUrl, file_path: filePath };
+    console.log(file);
+    
+    const { data, error } = await supabase
+    .storage
+    .from('hung_bid')
+    .upload(
+      `${storage_path}/${new Date().getTime() + file.originalname}`, file.buffer, {
+      cacheControl: '3600',
+      contentType: file.mimetype,
+      upsert: false
+    })
+    console.log(data);
+    
+    if(error){
+      console.log('BytescaleUtit', error); 
+    }
+    return { file_url: data?.fullPath, file_path: data?.path };
   },
-  Delete(file_path) {
-    const file_api = new Bytescale.FileApi({
-      fetchApi: nodeFetch,
-      apiKey: BYTE_SCALE_SECRET_KEY,
-    });
+  Delete(storage_path_arr) {
+    supabase
+    .storage
+    .from('hung_bid')
+    .remove(storage_path_arr)
+    .then((data, error) => {
+      console.log("Delete file");
+      console.log(data ?? error);
+    })
 
-    file_api
-      .deleteFile({
-        accountId: BYTE_SCALE_ACCOUNT_ID,
-        filePath: file_path,
-      })
-      .then(() => console.log("Delete file success: " + file_path));
-  },
-  DeleteMultiple(file_paths) {
-    const file_api = new Bytescale.FileApi({
-      fetchApi: nodeFetch,
-      apiKey: BYTE_SCALE_SECRET_KEY,
-    });
-
-    file_api
-      .deleteFileBatch({
-        accountId: BYTE_SCALE_ACCOUNT_ID,
-        deleteFileBatchRequest: { files: file_paths },
-      })
-      .then((result) => {
-        console.log("Delete file success: ");
-        console.log(result);
-      });
   },
 };
 

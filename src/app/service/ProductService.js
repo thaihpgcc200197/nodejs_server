@@ -13,66 +13,13 @@ const { ProductStatus } = require("../constant");
 const aqp = require("api-query-params");
 
 const ProductService = {
-  async makeBid(auctionProductId, price, user_id) {
+ 
+  async searchProductsByName(req) {
+    const { filter, limit, sort } = aqp(req.query);
+    const { name } = req.params;
     try {
-      const product = await ProductSchema.findOne({
-        _id: auctionProductId,
-        status: ProductStatus.AUCTIONING,
-      });
-      const { mess, status } = await this.validateProductAndPrice(
-        product,
-        price
-      );
-      if (mess != "") {
-        return { mess, status };
-      }
-      product.bids.push({
-        user: new mongoose.Types.ObjectId(user_id),
-        price: price,
-      });
-      await product.save();
-      return { mess: "Bid placed successfully", status: OK };
-    } catch (error) {
-      console.error(error);
-      return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR };
-    }
-  },
-
-  validateProductAndPrice(product, price) {
-    if (!product) {
-      return {
-        mess: "Product not found in ongoing auction",
-        status: NOT_FOUND,
-      };
-    }
-    if (product.end_time < new Date()) {
-      return { mess: "The auction has ended.", status: BAD_REQUEST };
-    }
-    if (price == null || price == "") {
-      return { mess: "Price is required", status: BAD_REQUEST };
-    }
-
-    const highestBidPrice = product.bids.reduce((highestPrice, currentBid) => {
-      if (currentBid.price > highestPrice) {
-        return currentBid.price;
-      }
-      return highestPrice;
-    }, product.start_price);
-    const validPrice = highestBidPrice + product.step_price;
-    if (price <= validPrice) {
-      return {
-        mess: "Price must be greater than base price plus step price",
-        status: BAD_REQUEST,
-      };
-    }
-    return { mess: "", status: OK };
-  },
-
-  async searchProductsByName(name) {
-    try {
-      const products = await ProductSchema.find({
-        name: { $regex: name, $options: "i" },
-      })
+      filter.name= { $regex: name, $options: "i" }
+      const products = await ProductSchema.find(filter).sort(sort)
         .populate("cate")
         .populate("user")
         .populate("bids.user");
