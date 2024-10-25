@@ -17,10 +17,10 @@ const UserController = {
     console.log(result);
     return json(result);
   },
-  async ViewProfileUser(req) {
+  async ViewProfileUser(req,res) {
     const result = await UserService.ViewProfileUser(req);
     console.log(result);
-    return json(result);
+    return res.json(result);
   },
 };
 module.exports = UserController;
