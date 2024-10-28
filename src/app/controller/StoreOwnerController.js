@@ -35,12 +35,6 @@ const StoreOwnerController = {
     const result = await StoreOwnerService.listProduct(req);
     return res.json(result);
   },
-
-  async Detail(req, res) {
-    const {  id } = req.params;
-    const result = await StoreOwnerService.Detail(id);
-    return res.json(result);
-  },
   async Create(req, res) {
     const { name, category_id, start_price, step_price,quantity } = req.body;
     const file=req.file
