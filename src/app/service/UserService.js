@@ -20,19 +20,19 @@ const UserService = {
     return  user.save();
   },
 
-  async UpdateUser(full_name, phone, birthday, address, req) {
+  async UpdateUser(full_name, phone, address, req) {
     const result = await UserSchema.findByIdAndUpdate(
       req.user.id,
-      { full_name, phone, birthday, address },
+      { full_name, phone, address },
       { new: true, runValidators: true }
     );
     return result;
   },
 
   async ViewProfileUser(req) {
-    const { full_name, email, address, birthday, phone } =
+    const { full_name, email, address, phone } =
       await UserSchema.findOne({ _id: req.user.id });
-    return { full_name, email, address, birthday, phone };
+    return { full_name, email, address, phone };
   },
 };
 module.exports = UserService;

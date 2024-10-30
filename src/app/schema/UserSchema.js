@@ -12,7 +12,6 @@ const UserSchema = new Schema(
     email: { type: String, require: true },
     password: { type: String, require: true },
     phone: { type: String },
-    birthday: { type: String },
     address: { type: String },
     role: { type: String, require: true },
     status: { type: String, default: UserStatus.ACTIVATED },
