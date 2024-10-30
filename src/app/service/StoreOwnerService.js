@@ -43,8 +43,11 @@ const StoreOwnerService = {
   async MyActivityStatistics(req) {
     try {
       const list_product_id_order= await OrderSchema.find({user_id:req.user.id,status:{$in:[OrderStatus.PENDING,OrderStatus.Delivery]}}).select('product');
+      const product_blur = list_product_id_order.map((order)=>{
+            return order.product
+      })
       const { filter,sort } = aqp(req.query);
-      filter._id= {$nin:list_product_id_order };
+      filter._id= {$nin:product_blur };
       filter.bids = { $elemMatch: { user: req.user.id } };
       filter.status =ProductStatus.AUCTIONING;
 
