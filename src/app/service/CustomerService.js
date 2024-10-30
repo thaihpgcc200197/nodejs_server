@@ -88,7 +88,7 @@ const CustomerService = {
       );
       const order = new OrderSchema();
       order.product = new mongoose.Types.ObjectId(auctionProductId);
-      order.user = new mongoose.Types.ObjectId(user_id);
+      order.user_id = new mongoose.Types.ObjectId(user_id);
       order.owner_id = new mongoose.Types.ObjectId(owner_id);
       order.status=OrderStatus.PENDING;
       await order.save();
