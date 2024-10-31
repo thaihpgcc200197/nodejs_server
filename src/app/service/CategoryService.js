@@ -20,7 +20,7 @@ const CategoryService = {
       if (!cate) {
         return { mess: "Category not found", status: NOT_FOUND };
       }
-      if (user_id != cate.user._id) {
+      if (user_id != cate.user) {
         return {
           mess: "This function is only performed by the author",
           status: UNAUTHORIZED,
@@ -40,17 +40,17 @@ const CategoryService = {
         return { mess: "Category not found", status: NOT_FOUND };
       }
       const cate_used = await ProductSchema.find({ cate: cate_id });
-      if (cate_used) {
+      if (!cate_used) {
         return { mess: "Category has been used", status: NOT_ACCEPTABLE };
       }
-      if (user_id != cate.user._id) {
+      if (user_id != cate.user) {
         return {
           mess: "This function is only performed by the author",
           status: UNAUTHORIZED,
         };
       }
       await CategorySchema.deleteOne(cate);
-      return { mess: "The category has been updated successfully", status: OK };
+      return { mess: "The category has been deleted successfully", status: OK };
     } catch (error) {
       return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
