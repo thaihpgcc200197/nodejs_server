@@ -39,8 +39,9 @@ const CategoryService = {
       if (!cate) {
         return { mess: "Category not found", status: NOT_FOUND };
       }
-      const cate_used = await ProductSchema.find({ cate: cate_id });
-      if (!cate_used) {
+      const cate_used = await ProductSchema.findOne({ cate: cate_id });
+      console.log(cate_used);
+      if (cate_used) {
         return { mess: "Category has been used", status: NOT_ACCEPTABLE };
       }
       if (user_id != cate.user) {
