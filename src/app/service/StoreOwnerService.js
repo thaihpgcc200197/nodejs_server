@@ -88,7 +88,7 @@ const StoreOwnerService = {
 
   async UpdateOrderStatus(order_id,status) {
     try {
-      const order = await ProductSchema.findOne({ _id: order_id});
+      const order = await OrderSchema.findOne({ _id: order_id});
       if (!order) return { mess: "Order not found", status: BAD_REQUEST }; 
       order.status=status;
       const result= await order.save()
