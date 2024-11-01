@@ -1,7 +1,5 @@
 const ProductStatus={
-    PROCESSING:'processing',
     ACCEPT:'accept',
-    REFUSE:'refuse',
 
     AUCTIONING:'auctioning',
 

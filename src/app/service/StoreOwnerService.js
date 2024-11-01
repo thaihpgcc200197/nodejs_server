@@ -88,8 +88,8 @@ const StoreOwnerService = {
 
   async UpdateOrderStatus(product_id,status) {
     try {
-      const order = await ProductSchema.findOne({ product: product_id, status: OrderStatus.PENDING });
-      if (!order) return { mess: "Order not found or not status pending", status: BAD_REQUEST }; 
+      const order = await ProductSchema.findOne({ product: product_id});
+      if (!order) return { mess: "Order not found", status: BAD_REQUEST }; 
       order.status=status;
       const result= await order.save()
       return { mess: "Update order successful", status: OK,result }; 
@@ -131,7 +131,7 @@ const StoreOwnerService = {
         return { mess: "Category not found", status: NOT_FOUND };
       }
       const product = new ProductSchema({ name, cate: category_id, start_price, step_price,quantity,
-         user: user_id, img_url: file_url, img_path: file_path,status:'processing'});
+         user: user_id, img_url: file_url, img_path: file_path,status:ProductStatus.ACCEPT});
       const result= await product.save();
       return {result, status:CREATED};
     } catch (error) {
@@ -149,7 +149,7 @@ const StoreOwnerService = {
     if(product.user.toString() !=user_id){
       return { mess: "You are not the author", status: UNAUTHORIZED };
     }
-    if(product.status==ProductStatus.PROCESSING) {
+    if(product.status==ProductStatus.ACCEPT) {
       try {
         if(file){
         BytescaleUtil.Delete(product.img_path)
@@ -169,7 +169,7 @@ const StoreOwnerService = {
           return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}
         }
     }else{
-      return { mess: "Product not found or not status processing", status: NOT_FOUND };
+      return { mess: "Product not found or not status ", status: NOT_FOUND };
     } 
   
   },
