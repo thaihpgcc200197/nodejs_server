@@ -20,9 +20,9 @@ const StoreOwnerController = {
   },
 
   async UpdateOrderStatus(req, res) {
-    const product_id = req.params.product_id;
+    const order_id = req.params.order_id;
     const { status } = req.body; 
-    const result = await StoreOwnerService.UpdateOrderStatus(product_id,status); 
+    const result = await StoreOwnerService.UpdateOrderStatus(order_id,status); 
     return res.json(result);
   },
  
