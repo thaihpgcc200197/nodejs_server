@@ -11,12 +11,11 @@ const CustomerController = {
     return res.json(result);
   },
   async CheckoutCart(req, res) {
-    const { auctionProductId,owner_id } = req.params;
+    const { auctionProductId } = req.params;
     const user_id = req.user.id;
     const result = await CustomerService.CheckoutCard(
       auctionProductId,
-      user_id,
-      owner_id
+      user_id
     );
     return res.json(result);
   },

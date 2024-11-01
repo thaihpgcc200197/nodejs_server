@@ -3,6 +3,8 @@ const {
   INTERNAL_SERVER_ERROR,
   OK,
   BAD_REQUEST,
+  NOT_ACCEPTABLE,
+  UNAUTHORIZED,
 } = require("http-status-codes");
 const { ProductSchema, OrderSchema, UserSchema } = require("../schema");
 const mongoose = require("mongoose");
@@ -65,7 +67,7 @@ const CustomerService = {
     return { mess: "", status: OK };
   },
 
-  async CheckoutCard(auctionProductId, user_id,owner_id) {
+  async CheckoutCard(auctionProductId, user_id) {
     try {
       const product = await ProductSchema.findOne({
         _id: new mongoose.Types.ObjectId(auctionProductId),
@@ -74,25 +76,27 @@ const CustomerService = {
       });
       const { mess, status } = await this.validateProduct(product, user_id);
       if (mess != "") return { mess, status };
+
+      let userWinBids;
       const highestBidPrice = product.bids.reduce(
         (highestPrice, currentBid) => {
-          if (
-            currentBid.price > highestPrice &&
-            currentBid.user.toString() == user_id
-          ) {
+          if (currentBid.price > highestPrice) {
+            userWinBids=currentBid.user
             return currentBid.price;
           }
           return highestPrice;
         },
         0
       );
+      if(userWinBids!=user_id)  return { mess: "Rights can only be exercised by the winner of the auction", status: UNAUTHORIZED };
       const order = new OrderSchema();
       order.product = new mongoose.Types.ObjectId(auctionProductId);
-      order.user_id = new mongoose.Types.ObjectId(user_id);
-      order.owner_id = new mongoose.Types.ObjectId(owner_id);
+      order.user_id = new mongoose.Types.ObjectId(userWinBids);
+      order.owner_id = new mongoose.Types.ObjectId(product.user);
       order.status=OrderStatus.PENDING;
-      await order.save();
-      return { mess: "CheckoutCard successfully", status: OK, highestBidPrice };
+      const result= await order.save();
+       
+      return { mess: "CheckoutCard successfully", status: OK, highestBidPrice,result };
     } catch (error) {
       console.log(error);
       return { mess: "Internal server error", status: INTERNAL_SERVER_ERROR };
