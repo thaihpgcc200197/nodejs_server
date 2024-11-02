@@ -1,5 +1,5 @@
 module.exports = {
-  CONNECTION_STRING: "mongodb://127.0.0.1:27017/hung-bid",
+  CONNECTION_STRING: "mongodb+srv://tphphihung:K4DHDvm3lXmIdQvE@cluster0.jxn1s.mongodb.net/hung_bid",
   APP_MAIL: "",
   APP_MAIL_PASS: "",
   JWT_SECRET_KEY: "9bcc6413-1cab-4539-8830-a7116d787c7b",
