@@ -11,7 +11,7 @@ const BytescaleUtil = {
     .storage
     .from('hung_bid')
     .upload(
-      `${storage_path}/${new Date().getTime() + file.originalname}`, file.buffer, {
+      `${storage_path}/${new Date().getTime()}`, file.buffer, {
       cacheControl: '3600',
       contentType: file.mimetype,
       upsert: false
