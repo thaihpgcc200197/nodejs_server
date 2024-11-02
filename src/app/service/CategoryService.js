@@ -65,11 +65,7 @@ const CategoryService = {
       const list_cate = await CategorySchema.find(filter).sort(sort)
       .populate("user", "-password")
       .exec();
-      if (!list_cate) {
-        return { mess: "Category not found", status: NOT_FOUND };
-      } else {
-        return list_cate;
-      }
+      return list_cate;
     } catch (error) {
       return { mess: "INTERNAL SERVER ERROR", status: INTERNAL_SERVER_ERROR };
     }
