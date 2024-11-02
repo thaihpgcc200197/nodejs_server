@@ -1,4 +1,4 @@
-const { NOT_FOUND, INTERNAL_SERVER_ERROR, OK, CREATED, NOT_ACCEPTABLE, BAD_REQUEST} = require("http-status-codes");
+const { NOT_FOUND, INTERNAL_SERVER_ERROR, OK, CREATED, NOT_ACCEPTABLE, BAD_REQUEST, UNAUTHORIZED} = require("http-status-codes");
 const { ProductSchema, CategorySchema,OrderSchema } = require("../schema");
 const { BytescaleUtil } = require("../../util");
 const mongoose = require("mongoose");
@@ -100,7 +100,7 @@ const StoreOwnerService = {
   },
    async Publish(auctionProductId,start_time,end_time) {
     try {
-      const product = await ProductSchema.findOne({ _id: auctionProductId, status: ProductStatus.ACCEPT});
+      const product = await ProductSchema.findOne({ _id: auctionProductId, status: { $in: [ProductStatus.ACCEPT, ProductStatus.AUCTIONING] } });
       const {mess,status} = await this.validatePublish(product,start_time,end_time);
       if(mess!="") return {mess,status}     
       product.status=ProductStatus.AUCTIONING;
@@ -132,16 +132,14 @@ const StoreOwnerService = {
       }
       const product = new ProductSchema({ name, cate: category_id, start_price, step_price,quantity,
          user: user_id, img_url: file_url, img_path: file_path,status:ProductStatus.ACCEPT});
-      const result= await product.save();
-      return {result, status:CREATED};
+         console.log(123);
+         product.save()
+      return {product, status:CREATED};
     } catch (error) {
       return {mess:"Internal server error", status:INTERNAL_SERVER_ERROR}
     }
   },
-  async Update(name,category_id,product_id,start_price,step_price,user_id,file,quantity  ) {
-    if (!mongoose.isValidObjectId(category_id)) return { error: "Invalid Category id", status: NOT_FOUND };
-    if (!mongoose.isValidObjectId(product_id)) return { error: "Invalid Product id", status: NOT_FOUND };
-   
+  async Update(name,category_id,product_id,start_price,step_price,user_id,file,quantity  ) {   
     let product = await ProductSchema.findById(product_id).populate('cate').exec();
     const cate= await CategorySchema.findById(category_id);
     if(!cate) return { error: "Invalid category id", status: NOT_FOUND }; 
